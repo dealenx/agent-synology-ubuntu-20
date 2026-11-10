@@ -10,10 +10,6 @@ RUN apt-get update \
         sudo ca-certificates curl \
         linux-headers-generic build-essential libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/* \
-    # synosnap postinst aborts when it finds no initrd file in /boot;
-    # update-initramfs is absent, the file is found and skipped.
-    && K=$(basename "$(ls -d /lib/modules/* | head -1)") \
-    && touch "/boot/initrd.img-$K"
 
 WORKDIR /root/ABB
 CMD ["bash"]
