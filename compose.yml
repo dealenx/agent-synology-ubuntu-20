@@ -1,0 +1,11 @@
+services:
+  abb:
+    build: .
+    hostname: localhost
+    stdin_open: true
+    tty: true
+    working_dir: /root/ABB
+    volumes:
+      - ./install.run:/root/ABB/install.run:ro
+      - ./install-abb.sh:/root/ABB/install-abb.sh:ro
+      - ./verify.sh:/verify.sh:ro
