@@ -21,6 +21,10 @@ fi
 [ "${ID:-}" = "ubuntu" ] && [ "${VERSION_ID:-}" = "20.04" ] \
     || die "Ubuntu 20.04 required, found ${ID:-?} ${VERSION_ID:-?}"
 
+# capture the script's directory before cd (works when invoked as ./install-abb.sh)
+SCRIPT_DIR=""
+[ -f "$0" ] && SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
 export DEBIAN_FRONTEND=noninteractive
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
@@ -28,8 +32,6 @@ cd "$WORK"
 
 # 3. fetch installer: a copy next to this script wins (works offline/in CI),
 # otherwise download — required for the `curl | bash` flow
-SCRIPT_DIR=""
-[ -f "$0" ] && SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/$INSTALLER" ]; then
     cp "$SCRIPT_DIR/$INSTALLER" .
 else
