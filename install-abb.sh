@@ -49,8 +49,17 @@ if ! apt-get install -y -qq "linux-headers-$(uname -r)" >/dev/null 2>&1; then
     log "installing canonical Ubuntu 20.04 kernel (linux-generic)..."
     apt-get install -y -qq linux-generic >/dev/null || die "cannot install linux-generic"
 
-    K=$(ls -1 /lib/modules | sort -V | tail -1)
-    [ -n "$K" ] || die "no kernel found in /lib/modules"
+    # NOT "newest in /lib/modules" — that could still be the third-party kernel.
+    # Pick a kernel whose headers package dpkg actually reports as installed.
+    K=""
+    for cand in $(dpkg-query -W -f='${Package}\n' 'linux-headers-*' 2>/dev/null \
+                    | sed 's/^linux-headers-//' | sort -ru); do
+        if [ -e "/lib/modules/$cand" ] && [ -e "/lib/modules/$cand/build" ]; then
+            K=$cand
+            break
+        fi
+    done
+    [ -n "$K" ] || die "linux-generic installed but no kernel with headers found in dpkg"
     log "installer will use headers for kernel $K; reboot into it after install to load the driver."
 
     # shim: report the focal kernel for 'uname -r' inside the installer only
