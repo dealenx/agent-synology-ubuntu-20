@@ -42,6 +42,20 @@ test_dependency ${packages[@]}
    установщику заголовки установленного ядра (shim `uname -r`).
 3. После установки агента нужно перезагрузиться в новое ядро и `modprobe synosnap`.
 
+## Ошибка 0xfffffffffffffffe после установки
+
+По [базе знаний Synology](https://kb.synology.com/ru-ru/DSM/tutorial/How_do_I_fix_Active_Backup_for_Business_error_code_0xfffffffffffffffe)
+код `0xfffffffffffffffe` означает, что драйвер снимков `synosnap` не установлен
+или не инициализировался. Скрипт после установки сам выполняет эти шаги:
+
+1. `dkms status` — драйвер должен быть `installed` для целевого ядра;
+   если нет — `dpkg --purge synosnap synology-active-backup-business-linux-service`
+   и повторный запуск `install.run`.
+2. `lsmod | grep synosnap` + `cat /proc/synosnap-info` — проверка загрузки;
+   если ядро ещё не загружено — подсказка про `modprobe synosnap` после ребута.
+3. Secure Boot: при включённом `mokutil --sb-state` напомнит про
+   `mokutil --import /opt/synosnap/MOK.der`.
+
 ## Тест скрипта в Docker (Ubuntu 20.04)
 
 `Dockerfile` — облегчённый focal, `compose.yml` монтирует `install.run` и
