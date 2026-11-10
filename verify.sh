@@ -1,14 +1,14 @@
 #!/bin/bash
-# Throwaway/CI test: reproduce the vendor failure, then prove install-abb.sh fixes it.
+# CI/local test: reproduce the vendor failure, then prove install-abb.sh fixes it.
 set -u
-cd /root/ABB
+cd "$(dirname "$0")" || exit 1
+chmod +x ./install.run ./install-abb.sh 2>/dev/null || true
 
 echo "=== STEP 1: reproduce (real uname -> host kernel headers missing) ==="
-mv /usr/local/sbin/uname /tmp/uname.wrap
-PATH=/usr/sbin:/usr/bin:/sbin:/bin ./install.run > /tmp/step1.log 2>&1
+./install.run > /tmp/step1.log 2>&1
 rc1=$?
-grep -E "no installation candidate|install linux-headers.* failed" /tmp/step1.log
-mv /tmp/uname.wrap /usr/local/sbin/uname
+grep -E "no installation candidate|install linux-headers.* failed" /tmp/step1.log \
+    || { echo "FAIL: reproduction output mismatch"; tail -20 /tmp/step1.log; exit 1; }
 [ "$rc1" -ne 0 ] || { echo "FAIL: expected reproduction to fail"; exit 1; }
 echo "reproduced as expected (exit=$rc1)"
 
