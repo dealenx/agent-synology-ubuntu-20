@@ -55,7 +55,7 @@ docker compose run --rm abb bash /verify.sh
 `verify.sh` (используется и в CI):
 
 1. Запускает `install.run` с настоящим `uname -r` → ожидает падения с
-   `no installation candidate` (тот же лог, что у коллеги).
+   `no installation candidate` (та же ошибка, что и без установщика).
 2. Запускает `install-abb.sh` → ожидает `exit 0` и `The installation is complete`.
 
 ## GitHub Actions
@@ -63,14 +63,14 @@ docker compose run --rm abb bash /verify.sh
 `.github/workflows/test.yml` на каждый push запускает `verify.sh` в чистом
 контейнере `ubuntu:20.04` (job `container: ubuntu:20.04`). Нативный раннер
 `ubuntu-20.04` GitHub удалил в апреле 2025 — контейнер это заменяет, и это
-близко к машине коллеги: голый focal, ничего не предустановлено.
+близко к целевой машине: голый focal, ничего не предустановлено.
 
 ## Содержимое
 
 | Файл | Назначение |
 |---|---|
 | `install.run` | официальный установщик Synology ABB Agent 3.2.2 (Makeself) |
-| `install-abb.sh` | одностраничный установщик для коллеги (с фиксом стороннего ядра) |
+| `install-abb.sh` | однокомандный установщик (с фиксом стороннего ядра) |
 | `Dockerfile`, `compose.yml` | тестовый контейнер ubuntu 20.04 |
 | `verify.sh` | автотест: репро ошибки + успех установки |
 
