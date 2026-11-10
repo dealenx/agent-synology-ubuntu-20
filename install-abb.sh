@@ -26,11 +26,12 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 cd "$WORK"
 
-# 3. fetch installer (local copy next to the script wins, if piped-from-curl it won't exist)
-if [ -f "./$INSTALLER" ]; then
-    :
-elif [ -f "/root/ABB/$INSTALLER" ]; then
-    cp "/root/ABB/$INSTALLER" .
+# 3. fetch installer: a copy next to this script wins (works offline/in CI),
+# otherwise download — required for the `curl | bash` flow
+SCRIPT_DIR=""
+[ -f "$0" ] && SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/$INSTALLER" ]; then
+    cp "$SCRIPT_DIR/$INSTALLER" .
 else
     command -v curl >/dev/null || die "curl is required to download $INSTALLER"
     log "downloading $INSTALLER..."
