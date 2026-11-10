@@ -69,16 +69,40 @@ if ! apt-get install -y -qq "linux-headers-$(uname -r)" >/dev/null 2>&1; then
     export PATH="$WORK/bin:$PATH"
 fi
 
-apt-get install -y -qq dkms make libglib2.0-0 >/dev/null || die "cannot install dkms/make/libglib2.0-0"
+apt-get install -y -qq dkms make libglib2.0-0 mokutil >/dev/null || die "cannot install dkms/make/libglib2.0-0/mokutil"
 
 # 5. run the vendor installer
 rc=0
 ./"$INSTALLER" || rc=$?
 if [ "$rc" -eq 0 ]; then
-    log "install complete. Next: run 'abb-cli -c' to connect to your NAS."
     if [ -n "${K:-}" ]; then
         log "driver was built for kernel $K — reboot into it, then 'modprobe synosnap'."
     fi
 else
     die "installer exited with $rc (see output above)"
 fi
+
+# 6. verify the snapshot driver (Synology KB: error 0xfffffffffffffffe means
+# synosnap is missing or failed to initialize)
+TARGET_K="${K:-$(uname -r)}"
+
+if ! dkms status -m synosnap -k "$TARGET_K" 2>/dev/null | grep -q installed; then
+    log "driver not registered in dkms for $TARGET_K — purge and reinstall agent (KB step)"
+    dpkg --purge synosnap synology-active-backup-business-linux-service >/dev/null 2>&1 || true
+    ./install.run >/tmp/abb-reinstall.log 2>&1 || { tail -20 /tmp/abb-reinstall.log; die "driver reinstall failed"; }
+    dkms status -m synosnap -k "$TARGET_K" 2>/dev/null | grep -q installed \
+        || die "driver still missing in dkms for $TARGET_K — kernel may be unsupported (KB 0xfffffffffffffffe)"
+fi
+log "driver registered in dkms for $TARGET_K"
+
+if lsmod | grep -q synosnap && cat /proc/synosnap-info >/dev/null 2>&1; then
+    log "synosnap loaded, /proc/synosnap-info OK"
+else
+    log "driver not loaded yet — after reboot into $TARGET_K run: modprobe synosnap && cat /proc/synosnap-info"
+fi
+
+if command -v mokutil >/dev/null 2>&1 && mokutil --sb-state 2>/dev/null | grep -qi enabled; then
+    log "Secure Boot is ON — after reboot: sudo mokutil --import /opt/synosnap/MOK.der (KB 0xfffffffffffffffe)"
+fi
+
+log "install complete. Next: run 'abb-cli -c' to connect to your NAS."
