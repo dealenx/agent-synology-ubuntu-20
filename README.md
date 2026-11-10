@@ -56,6 +56,23 @@ test_dependency ${packages[@]}
 3. Secure Boot: при включённом `mokutil --sb-state` напомнит про
    `mokutil --import /opt/synosnap/MOK.der`.
 
+## Ошибка SSL при `abb-cli -c`
+
+Сообщение вида «The SSL certificate of the Synology NAS ...» возникает при
+подключении по IP-адресу, если у NAS стандартный самоподписанный сертификат
+и агент его не доверяет. По [статье Synology](https://kb.synology.com/ru-ru/DSM/tutorial/How_do_I_set_up_a_proper_connection_between_ABB_agent_and_server)
+решение на стороне DSM (не агента):
+
+- в **Active Backup for Business → Настройки → Certificate** выбрать **Enable**
+  (выделенный сертификат ABB — самый простой вариант для подключения по IP), **или**
+- подключаться по домену DDNS с доверенным (Let's Encrypt/самоподписанным) сертификатом.
+
+## `modprobe: FATAL: Module synosnap not found` при установке
+
+Это ожидаемо: установка идёт под текущим (сторонним) ядром, а модуль собран
+для ядра `linux-generic`. После ребута в 5.4.x `modprobe synosnap` отработает;
+скрипт печатает напоминание об этом в конце.
+
 ## Тест скрипта в Docker (Ubuntu 20.04)
 
 `Dockerfile` — облегчённый focal, `compose.yml` монтирует `install.run` и
