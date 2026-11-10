@@ -2,6 +2,8 @@
 # CI/local test: reproduce the vendor failure, then prove install-abb.sh fixes it.
 set -u
 cd "$(dirname "$0")" || exit 1
+# CI: script sits next to install.run; local docker: mounted at /verify.sh
+[ -f ./install.run ] || cd /root/ABB
 chmod +x ./install.run ./install-abb.sh 2>/dev/null || true
 
 echo "=== STEP 1: reproduce (real uname -> host kernel headers missing) ==="
