@@ -1,0 +1,43 @@
+# Synology Active Backup for Business Agent README and Installation Guide
+
+Copyright (c) 2026 Synology Inc. All rights reserved.
+
+## Introduction
+
+The installation file contains Linux snapshot driver and the Linux backup service. 
+
+## System requirement
+
+### Linux distributions:
+* Debian: 10, 11, 12, 13
+* Ubuntu: 16.04, 18.04, 20.04, 22.04, 24.04
+* Architechture: x86_64, check with `uname -m`
+
+### Required components on the target device:
+
+* linux-headers-$(uname -r)
+* make 4.1 version or above
+* dkms 2.2.0.3 version or above
+* gcc 4.8.2 version or above
+
+For Linux servers without internet connection, you will need to download the required components and install them before running the installation script. 
+
+For Linux server with internet connection, the required components will be installed automatically by running the installation script. 
+
+## Install Active Backup for Business Linux Agent
+
+Enter command line to install Linux snapshot driver and Linux backup service. Administrator role is required to execute the command.
+
+Please switch the role to root before execution.
+
+`> sudo ./install.run `
+
+## Installation complete
+
+After the installation is complete, please type `abb-cli -c` to connect to Synology NAS and create the backup task.
+To learn more commands about Active Backup for Business Linux Agent, please type `abb-cli -h`. 
+
+## Uninstall the agent
+
+Type "dpkg -r synology-active-backup-business-linux-service" to uninstall the backup service.
+Type "dpkg -r synosnap" to uninstall the driver.
